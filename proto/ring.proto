@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package dfsha.ring;
+
+// Protocolo interno entre peers: membresia (gossip) y almacenamiento
+// de blobs (chunks de archivos y metadatos, ambos tratados igual).
+service RingService {
+  rpc HealthCheck (HealthRequest) returns (HealthResponse);
+  rpc StoreBlob (BlobRequest) returns (StatusResponse);
+  rpc GetBlob (BlobKeyRequest) returns (BlobResponse);
+  rpc DeleteBlob (BlobKeyRequest) returns (StatusResponse);
+}
+
+message PeerInfo {
+  string address = 1;     // host:puerto
+  string peer_id_hex = 2; // id en el anillo (hash del address)
+}
+
+message HealthRequest {
+  PeerInfo caller = 1;
+  repeated PeerInfo known_peers = 2; // gossip: lo que el caller conoce
+}
+
+message HealthResponse {
+  bool alive = 1;
+  repeated PeerInfo known_peers = 2; // gossip: lo que el receptor conoce
+}
+
+message BlobRequest {
+  string key = 1;
+  bytes data = 2;
+}
+
+message BlobKeyRequest { string key = 1; }
+
+message BlobResponse {
+  bool found = 1;
+  bytes data = 2;
+}
+
+message StatusResponse {
+  bool ok = 1;
+  string message = 2;
+}

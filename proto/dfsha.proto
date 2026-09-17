@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package dfsha;
+
+// API que expone cualquier peer del anillo hacia los clientes.
+// Cualquier peer puede atender cualquier request (server stateless):
+// el peer que recibe la llamada actua como "coordinador" para esa
+// operacion, calcula via hashing consistente que peers son duenos de
+// cada chunk/metadato, y reenvia internamente por RingService.
+service DFSService {
+  rpc Ls (LsRequest) returns (LsResponse);
+  rpc Mkdir (PathRequest) returns (StatusResponse);
+  rpc Rmdir (PathRequest) returns (StatusResponse);
+  rpc Rm (PathRequest) returns (StatusResponse);
+
+  rpc Send (stream FileChunk) returns (StatusResponse);
+  rpc Receive (PathRequest) returns (stream FileChunk);
+}
+
+message LsRequest { string path = 1; }
+
+message DirEntry {
+  string name = 1;
+  bool is_dir = 2;
+  int64 size_bytes = 3;
+}
+
+message LsResponse {
+  bool ok = 1;
+  string message = 2;
+  repeated DirEntry entries = 3;
+}
+
+message PathRequest { string path = 1; }
+
+message StatusResponse {
+  bool ok = 1;
+  string message = 2;
+}
+
+message FileChunk {
+  string path = 1;
+  bytes data = 2;
+}

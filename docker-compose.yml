@@ -1,0 +1,90 @@
+x-peer-common: &peer-common
+  build:
+    context: .
+    dockerfile: docker/Dockerfile.peer
+  networks:
+    - dfsha-net
+  environment:
+    REPLICATION_FACTOR: "2"
+    LISTEN_PORT: "50051"
+
+services:
+  peer1:
+    <<: *peer-common
+    container_name: dfsha-peer1
+    environment:
+      SELF_ADDRESS: peer1:50051
+      SEED_PEERS: ""            # primer peer: sin semillas, arranca el cluster
+      REPLICATION_FACTOR: "2"
+      LISTEN_PORT: "50051"
+    volumes:
+      - peer1_data:/data
+    ports:
+      - "60001:50051"           # expuesto al host solo para poder debuggear con grpcurl si hace falta
+
+  peer2:
+    <<: *peer-common
+    container_name: dfsha-peer2
+    environment:
+      SELF_ADDRESS: peer2:50051
+      SEED_PEERS: peer1:50051   # basta una semilla; el gossip propaga al resto
+      REPLICATION_FACTOR: "2"
+      LISTEN_PORT: "50051"
+    volumes:
+      - peer2_data:/data
+    depends_on:
+      - peer1
+
+  peer3:
+    <<: *peer-common
+    container_name: dfsha-peer3
+    environment:
+      SELF_ADDRESS: peer3:50051
+      SEED_PEERS: peer1:50051
+      REPLICATION_FACTOR: "2"
+      LISTEN_PORT: "50051"
+    volumes:
+      - peer3_data:/data
+    depends_on:
+      - peer1
+
+  peer4:
+    <<: *peer-common
+    container_name: dfsha-peer4
+    environment:
+      SELF_ADDRESS: peer4:50051
+      SEED_PEERS: peer1:50051
+      REPLICATION_FACTOR: "2"
+      LISTEN_PORT: "50051"
+    volumes:
+      - peer4_data:/data
+    depends_on:
+      - peer1
+
+  client:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.client
+    container_name: dfsha-client
+    command: ["--host", "peer1", "--port", "50051"]  # se puede apuntar a cualquier peer
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./local-files:/work
+    networks:
+      - dfsha-net
+    depends_on:
+      - peer1
+      - peer2
+      - peer3
+      - peer4
+
+networks:
+  dfsha-net:
+    driver: bridge
+
+volumes:
+  peer1_data:
+  peer2_data:
+  peer3_data:
+  peer4_data:

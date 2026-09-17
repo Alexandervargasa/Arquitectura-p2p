@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+data1/
+data2/
+data3/
+data4/
+local-files/
+*.log
+*.sqlite3
+.git
