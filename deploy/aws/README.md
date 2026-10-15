@@ -49,6 +49,15 @@ que las instancias se hablen entre sí sin abrir el puerto a todo
 Internet. Abre 50051 a tu IP solo si vas a correr el cliente desde tu
 máquina.
 
+> **Importante:** la regla "origen = el propio Security Group" solo
+> aplica a tráfico que viaja por **IP privada** dentro de la VPC. Si los
+> peers se configuran con su IP pública (`SELF_ADDRESS`/`SEED_PEERS`),
+> AWS no reconoce ese tráfico como interno y lo bloquea con un timeout
+> silencioso, aunque la regla se vea bien en la consola. Por eso en los
+> pasos 2 y 3 usamos la **IP privada** de cada instancia para el gossip
+> peer-a-peer (el cliente externo sigue usando la IP pública sin
+> problema, ya que esa va por la otra regla).
+
 ## 2. Lanzar el primer peer (semilla)
 
 1. Lanza una instancia EC2 (ej. `t3.micro`, Amazon Linux 2023 o Ubuntu).
@@ -56,9 +65,9 @@ máquina.
 3. En **User data**, pega `user-data.sh`. Antes:
    - Ajusta `REPO_URL`.
    - Deja `SEED_PEERS=""` (es la semilla).
-4. Lanza. El script instala Docker, clona el repo y arranca el peer con
-   `SELF_ADDRESS = <IP_publica>:50051` (la IP se descubre sola del
-   metadata de EC2).
+4. Lanza. El script instala Docker, clona el repo y arranca el peer. Usa
+   la **IP privada** de la instancia para `SELF_ADDRESS` (ver nota del
+   paso 1 sobre por qué debe ser privada y no pública).
 
 Alternativa manual (sin user-data), ya dentro de la instancia:
 
@@ -67,7 +76,8 @@ Alternativa manual (sin user-data), ya dentro de la instancia:
 sudo dnf install -y docker git && sudo systemctl enable --now docker
 git clone <REPO_URL> /opt/dfsha && cd /opt/dfsha/deploy/aws
 cp .env.peer.example .env.peer
-# editar .env.peer: SELF_ADDRESS=<IP_publica>:50051, SEED_PEERS= (vacio)
+# editar .env.peer: SELF_ADDRESS=<IP_privada>:50051, SEED_PEERS= (vacio)
+# la IP privada se ve con: hostname -I
 sudo docker compose -f docker-compose.peer.yml --env-file .env.peer up --build -d
 ```
 
@@ -76,8 +86,12 @@ sudo docker compose -f docker-compose.peer.yml --env-file .env.peer up --build -
 Igual que el primero, pero en `.env.peer` (o en las variables del
 `user-data.sh`):
 
-- `SELF_ADDRESS = <IP_publica_de_esta_instancia>:50051`
-- `SEED_PEERS = <IP_publica_del_peer1>:50051` (basta una semilla viva)
+- `SELF_ADDRESS = <IP_privada_de_esta_instancia>:50051`
+- `SEED_PEERS = <IP_privada_del_peer1>:50051` (basta una semilla viva)
+
+Usa siempre **IP privada** para estas dos variables (ver nota del paso
+1). El cliente (`verify_cluster.py` o tu propio cliente) sigue
+conectándose a cualquier peer por su **IP pública**; eso no cambia.
 
 Cada peer nuevo se integra al anillo por gossip sin reiniciar a los
 demás. Verás en los logs del contenedor:
