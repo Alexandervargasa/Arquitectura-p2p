@@ -13,7 +13,7 @@
 set -euxo pipefail
 
 # ----- configuracion del peer (EDITAR) -----
-REPO_URL="https://github.com/CAMBIAR/Arquitectura-p2p.git"
+REPO_URL="https://github.com/Alexandervargasa/Arquitectura-p2p.git"
 REPO_DIR="/opt/dfsha"
 SEED_PEERS=""          # vacio en el primer peer; en los demas: IP_SEED:50051
 REPLICATION_FACTOR="2"
