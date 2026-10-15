@@ -3,9 +3,9 @@
 import grpc
 import warnings
 
-import dfsha_pb2 as dfsha__pb2
+from common.proto import dfsha_pb2 as common_dot_proto_dot_dfsha__pb2
 
-GRPC_GENERATED_VERSION = '1.84.0'
+GRPC_GENERATED_VERSION = '1.66.2'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 
@@ -18,14 +18,14 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + ' but the generated code in dfsha_pb2_grpc.py depends on'
+        + f' but the generated code in common/proto/dfsha_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
     )
 
 
-class DFSServiceStub:
+class DFSServiceStub(object):
     """API que expone cualquier peer del anillo hacia los clientes.
     Cualquier peer puede atender cualquier request (server stateless):
     el peer que recibe la llamada actua como "coordinador" para esa
@@ -41,37 +41,37 @@ class DFSServiceStub:
         """
         self.Ls = channel.unary_unary(
                 '/dfsha.DFSService/Ls',
-                request_serializer=dfsha__pb2.LsRequest.SerializeToString,
-                response_deserializer=dfsha__pb2.LsResponse.FromString,
+                request_serializer=common_dot_proto_dot_dfsha__pb2.LsRequest.SerializeToString,
+                response_deserializer=common_dot_proto_dot_dfsha__pb2.LsResponse.FromString,
                 _registered_method=True)
         self.Mkdir = channel.unary_unary(
                 '/dfsha.DFSService/Mkdir',
-                request_serializer=dfsha__pb2.PathRequest.SerializeToString,
-                response_deserializer=dfsha__pb2.StatusResponse.FromString,
+                request_serializer=common_dot_proto_dot_dfsha__pb2.PathRequest.SerializeToString,
+                response_deserializer=common_dot_proto_dot_dfsha__pb2.StatusResponse.FromString,
                 _registered_method=True)
         self.Rmdir = channel.unary_unary(
                 '/dfsha.DFSService/Rmdir',
-                request_serializer=dfsha__pb2.PathRequest.SerializeToString,
-                response_deserializer=dfsha__pb2.StatusResponse.FromString,
+                request_serializer=common_dot_proto_dot_dfsha__pb2.PathRequest.SerializeToString,
+                response_deserializer=common_dot_proto_dot_dfsha__pb2.StatusResponse.FromString,
                 _registered_method=True)
         self.Rm = channel.unary_unary(
                 '/dfsha.DFSService/Rm',
-                request_serializer=dfsha__pb2.PathRequest.SerializeToString,
-                response_deserializer=dfsha__pb2.StatusResponse.FromString,
+                request_serializer=common_dot_proto_dot_dfsha__pb2.PathRequest.SerializeToString,
+                response_deserializer=common_dot_proto_dot_dfsha__pb2.StatusResponse.FromString,
                 _registered_method=True)
         self.Send = channel.stream_unary(
                 '/dfsha.DFSService/Send',
-                request_serializer=dfsha__pb2.FileChunk.SerializeToString,
-                response_deserializer=dfsha__pb2.StatusResponse.FromString,
+                request_serializer=common_dot_proto_dot_dfsha__pb2.FileChunk.SerializeToString,
+                response_deserializer=common_dot_proto_dot_dfsha__pb2.StatusResponse.FromString,
                 _registered_method=True)
         self.Receive = channel.unary_stream(
                 '/dfsha.DFSService/Receive',
-                request_serializer=dfsha__pb2.PathRequest.SerializeToString,
-                response_deserializer=dfsha__pb2.FileChunk.FromString,
+                request_serializer=common_dot_proto_dot_dfsha__pb2.PathRequest.SerializeToString,
+                response_deserializer=common_dot_proto_dot_dfsha__pb2.FileChunk.FromString,
                 _registered_method=True)
 
 
-class DFSServiceServicer:
+class DFSServiceServicer(object):
     """API que expone cualquier peer del anillo hacia los clientes.
     Cualquier peer puede atender cualquier request (server stateless):
     el peer que recibe la llamada actua como "coordinador" para esa
@@ -120,33 +120,33 @@ def add_DFSServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Ls': grpc.unary_unary_rpc_method_handler(
                     servicer.Ls,
-                    request_deserializer=dfsha__pb2.LsRequest.FromString,
-                    response_serializer=dfsha__pb2.LsResponse.SerializeToString,
+                    request_deserializer=common_dot_proto_dot_dfsha__pb2.LsRequest.FromString,
+                    response_serializer=common_dot_proto_dot_dfsha__pb2.LsResponse.SerializeToString,
             ),
             'Mkdir': grpc.unary_unary_rpc_method_handler(
                     servicer.Mkdir,
-                    request_deserializer=dfsha__pb2.PathRequest.FromString,
-                    response_serializer=dfsha__pb2.StatusResponse.SerializeToString,
+                    request_deserializer=common_dot_proto_dot_dfsha__pb2.PathRequest.FromString,
+                    response_serializer=common_dot_proto_dot_dfsha__pb2.StatusResponse.SerializeToString,
             ),
             'Rmdir': grpc.unary_unary_rpc_method_handler(
                     servicer.Rmdir,
-                    request_deserializer=dfsha__pb2.PathRequest.FromString,
-                    response_serializer=dfsha__pb2.StatusResponse.SerializeToString,
+                    request_deserializer=common_dot_proto_dot_dfsha__pb2.PathRequest.FromString,
+                    response_serializer=common_dot_proto_dot_dfsha__pb2.StatusResponse.SerializeToString,
             ),
             'Rm': grpc.unary_unary_rpc_method_handler(
                     servicer.Rm,
-                    request_deserializer=dfsha__pb2.PathRequest.FromString,
-                    response_serializer=dfsha__pb2.StatusResponse.SerializeToString,
+                    request_deserializer=common_dot_proto_dot_dfsha__pb2.PathRequest.FromString,
+                    response_serializer=common_dot_proto_dot_dfsha__pb2.StatusResponse.SerializeToString,
             ),
             'Send': grpc.stream_unary_rpc_method_handler(
                     servicer.Send,
-                    request_deserializer=dfsha__pb2.FileChunk.FromString,
-                    response_serializer=dfsha__pb2.StatusResponse.SerializeToString,
+                    request_deserializer=common_dot_proto_dot_dfsha__pb2.FileChunk.FromString,
+                    response_serializer=common_dot_proto_dot_dfsha__pb2.StatusResponse.SerializeToString,
             ),
             'Receive': grpc.unary_stream_rpc_method_handler(
                     servicer.Receive,
-                    request_deserializer=dfsha__pb2.PathRequest.FromString,
-                    response_serializer=dfsha__pb2.FileChunk.SerializeToString,
+                    request_deserializer=common_dot_proto_dot_dfsha__pb2.PathRequest.FromString,
+                    response_serializer=common_dot_proto_dot_dfsha__pb2.FileChunk.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -156,7 +156,7 @@ def add_DFSServiceServicer_to_server(servicer, server):
 
 
  # This class is part of an EXPERIMENTAL API.
-class DFSService:
+class DFSService(object):
     """API que expone cualquier peer del anillo hacia los clientes.
     Cualquier peer puede atender cualquier request (server stateless):
     el peer que recibe la llamada actua como "coordinador" para esa
@@ -179,8 +179,8 @@ class DFSService:
             request,
             target,
             '/dfsha.DFSService/Ls',
-            dfsha__pb2.LsRequest.SerializeToString,
-            dfsha__pb2.LsResponse.FromString,
+            common_dot_proto_dot_dfsha__pb2.LsRequest.SerializeToString,
+            common_dot_proto_dot_dfsha__pb2.LsResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -206,8 +206,8 @@ class DFSService:
             request,
             target,
             '/dfsha.DFSService/Mkdir',
-            dfsha__pb2.PathRequest.SerializeToString,
-            dfsha__pb2.StatusResponse.FromString,
+            common_dot_proto_dot_dfsha__pb2.PathRequest.SerializeToString,
+            common_dot_proto_dot_dfsha__pb2.StatusResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -233,8 +233,8 @@ class DFSService:
             request,
             target,
             '/dfsha.DFSService/Rmdir',
-            dfsha__pb2.PathRequest.SerializeToString,
-            dfsha__pb2.StatusResponse.FromString,
+            common_dot_proto_dot_dfsha__pb2.PathRequest.SerializeToString,
+            common_dot_proto_dot_dfsha__pb2.StatusResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -260,8 +260,8 @@ class DFSService:
             request,
             target,
             '/dfsha.DFSService/Rm',
-            dfsha__pb2.PathRequest.SerializeToString,
-            dfsha__pb2.StatusResponse.FromString,
+            common_dot_proto_dot_dfsha__pb2.PathRequest.SerializeToString,
+            common_dot_proto_dot_dfsha__pb2.StatusResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -287,8 +287,8 @@ class DFSService:
             request_iterator,
             target,
             '/dfsha.DFSService/Send',
-            dfsha__pb2.FileChunk.SerializeToString,
-            dfsha__pb2.StatusResponse.FromString,
+            common_dot_proto_dot_dfsha__pb2.FileChunk.SerializeToString,
+            common_dot_proto_dot_dfsha__pb2.StatusResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -314,8 +314,8 @@ class DFSService:
             request,
             target,
             '/dfsha.DFSService/Receive',
-            dfsha__pb2.PathRequest.SerializeToString,
-            dfsha__pb2.FileChunk.FromString,
+            common_dot_proto_dot_dfsha__pb2.PathRequest.SerializeToString,
+            common_dot_proto_dot_dfsha__pb2.FileChunk.FromString,
             options,
             channel_credentials,
             insecure,

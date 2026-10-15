@@ -1,0 +1,33 @@
+# docker-compose para UN SOLO peer por instancia EC2.
+#
+# Cada EC2 corre exactamente un peer de DFSha. La identidad y las
+# semillas se pasan por variables de entorno (ver .env.peer.example).
+#
+# Uso en la instancia:
+#   docker compose -f docker-compose.peer.yml --env-file .env.peer up --build -d
+#
+# El peer se identifica ante los demas con SELF_ADDRESS = IP_PUBLICA:PUERTO
+# (no un nombre de servicio Docker), para que el gossip funcione entre
+# maquinas distintas por Internet.
+services:
+  peer:
+    build:
+      context: ../..
+      dockerfile: peer/Dockerfile
+    container_name: dfsha-peer
+    restart: unless-stopped
+    environment:
+      SELF_ADDRESS: "${SELF_ADDRESS:?define SELF_ADDRESS=IP_PUBLICA:50051}"
+      SEED_PEERS: "${SEED_PEERS:-}"
+      REPLICATION_FACTOR: "${REPLICATION_FACTOR:-2}"
+      CHUNK_SIZE_MB: "${CHUNK_SIZE_MB:-8}"
+      PEER_WEIGHT: "${PEER_WEIGHT:-1}"
+      LISTEN_PORT: "50051"
+    # publicamos el puerto gRPC al host para que otras instancias lo alcancen
+    ports:
+      - "50051:50051"
+    volumes:
+      - peer_data:/data
+
+volumes:
+  peer_data:

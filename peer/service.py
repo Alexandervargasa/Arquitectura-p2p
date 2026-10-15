@@ -3,10 +3,10 @@ import posixpath
 
 import grpc
 
-import dfsha_pb2
-import dfsha_pb2_grpc
-import ring_pb2
-import ring_pb2_grpc
+from common.proto import dfsha_pb2
+from common.proto import dfsha_pb2_grpc
+from common.proto import ring_pb2
+from common.proto import ring_pb2_grpc
 
 log = logging.getLogger("dfsha.service")
 
@@ -26,8 +26,10 @@ class RingServiceServicer(ring_pb2_grpc.RingServiceServicer):
         self.local_store = local_store
 
     def HealthCheck(self, request, context):
-        self.membership.merge_known([p.address for p in request.known_peers])
-        self.membership.merge_known([request.caller.address])
+        # gossip: mezclamos lo que el caller conoce (con sus pesos) y al
+        # propio caller (con su peso).
+        self.membership.merge_known(list(request.known_peers))
+        self.membership.merge_known([request.caller])
         return ring_pb2.HealthResponse(alive=True, known_peers=self.membership.known_peers_proto())
 
     def StoreBlob(self, request, context):
@@ -80,18 +82,24 @@ class DFSServiceServicer(dfsha_pb2_grpc.DFSServiceServicer):
         return dfsha_pb2.StatusResponse(ok=ok, message=msg)
 
     def Send(self, request_iterator, context):
-        path = None
-        buf = bytearray()
+        # STREAMING: no acumulamos el archivo completo. Tomamos el path
+        # del primer mensaje y pasamos un generador de trozos de bytes
+        # al coordinador, que los reagrupa a chunk_size y los ubica sin
+        # mantener el archivo entero en memoria (RNF1).
         try:
-            for chunk in request_iterator:
-                if path is None:
-                    path = normalize(chunk.path)
-                buf.extend(chunk.data)
-            if path is None:
+            first = next(request_iterator, None)
+            if first is None:
                 return dfsha_pb2.StatusResponse(ok=False, message="no se recibio ningun chunk")
-            n_chunks = self.coord.store_file(path, bytes(buf))
+            path = normalize(first.path)
+
+            def byte_pieces():
+                yield first.data
+                for chunk in request_iterator:
+                    yield chunk.data
+
+            n_chunks, total = self.coord.store_file_stream(path, byte_pieces())
             return dfsha_pb2.StatusResponse(
-                ok=True, message=f"{len(buf)} bytes recibidos, particionados en {n_chunks} chunk(s)"
+                ok=True, message=f"{total} bytes recibidos, particionados en {n_chunks} chunk(s)"
             )
         except Exception as e:
             log.exception("Send error")

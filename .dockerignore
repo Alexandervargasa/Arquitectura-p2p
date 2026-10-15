@@ -1,5 +1,9 @@
 __pycache__/
 *.pyc
+.venv/
+venv/
+.pytest_cache/
+data/
 data1/
 data2/
 data3/
@@ -8,3 +12,6 @@ local-files/
 *.log
 *.sqlite3
 .git
+.kiro/
+docs/
+tests/
