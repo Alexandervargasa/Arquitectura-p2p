@@ -3,9 +3,9 @@
 import grpc
 import warnings
 
-import ring_pb2 as ring__pb2
+from common.proto import ring_pb2 as common_dot_proto_dot_ring__pb2
 
-GRPC_GENERATED_VERSION = '1.84.0'
+GRPC_GENERATED_VERSION = '1.66.2'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 
@@ -18,14 +18,14 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + ' but the generated code in ring_pb2_grpc.py depends on'
+        + f' but the generated code in common/proto/ring_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
     )
 
 
-class RingServiceStub:
+class RingServiceStub(object):
     """Protocolo interno entre peers: membresia (gossip) y almacenamiento
     de blobs (chunks de archivos y metadatos, ambos tratados igual).
     """
@@ -38,27 +38,27 @@ class RingServiceStub:
         """
         self.HealthCheck = channel.unary_unary(
                 '/dfsha.ring.RingService/HealthCheck',
-                request_serializer=ring__pb2.HealthRequest.SerializeToString,
-                response_deserializer=ring__pb2.HealthResponse.FromString,
+                request_serializer=common_dot_proto_dot_ring__pb2.HealthRequest.SerializeToString,
+                response_deserializer=common_dot_proto_dot_ring__pb2.HealthResponse.FromString,
                 _registered_method=True)
         self.StoreBlob = channel.unary_unary(
                 '/dfsha.ring.RingService/StoreBlob',
-                request_serializer=ring__pb2.BlobRequest.SerializeToString,
-                response_deserializer=ring__pb2.StatusResponse.FromString,
+                request_serializer=common_dot_proto_dot_ring__pb2.BlobRequest.SerializeToString,
+                response_deserializer=common_dot_proto_dot_ring__pb2.StatusResponse.FromString,
                 _registered_method=True)
         self.GetBlob = channel.unary_unary(
                 '/dfsha.ring.RingService/GetBlob',
-                request_serializer=ring__pb2.BlobKeyRequest.SerializeToString,
-                response_deserializer=ring__pb2.BlobResponse.FromString,
+                request_serializer=common_dot_proto_dot_ring__pb2.BlobKeyRequest.SerializeToString,
+                response_deserializer=common_dot_proto_dot_ring__pb2.BlobResponse.FromString,
                 _registered_method=True)
         self.DeleteBlob = channel.unary_unary(
                 '/dfsha.ring.RingService/DeleteBlob',
-                request_serializer=ring__pb2.BlobKeyRequest.SerializeToString,
-                response_deserializer=ring__pb2.StatusResponse.FromString,
+                request_serializer=common_dot_proto_dot_ring__pb2.BlobKeyRequest.SerializeToString,
+                response_deserializer=common_dot_proto_dot_ring__pb2.StatusResponse.FromString,
                 _registered_method=True)
 
 
-class RingServiceServicer:
+class RingServiceServicer(object):
     """Protocolo interno entre peers: membresia (gossip) y almacenamiento
     de blobs (chunks de archivos y metadatos, ambos tratados igual).
     """
@@ -92,23 +92,23 @@ def add_RingServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'HealthCheck': grpc.unary_unary_rpc_method_handler(
                     servicer.HealthCheck,
-                    request_deserializer=ring__pb2.HealthRequest.FromString,
-                    response_serializer=ring__pb2.HealthResponse.SerializeToString,
+                    request_deserializer=common_dot_proto_dot_ring__pb2.HealthRequest.FromString,
+                    response_serializer=common_dot_proto_dot_ring__pb2.HealthResponse.SerializeToString,
             ),
             'StoreBlob': grpc.unary_unary_rpc_method_handler(
                     servicer.StoreBlob,
-                    request_deserializer=ring__pb2.BlobRequest.FromString,
-                    response_serializer=ring__pb2.StatusResponse.SerializeToString,
+                    request_deserializer=common_dot_proto_dot_ring__pb2.BlobRequest.FromString,
+                    response_serializer=common_dot_proto_dot_ring__pb2.StatusResponse.SerializeToString,
             ),
             'GetBlob': grpc.unary_unary_rpc_method_handler(
                     servicer.GetBlob,
-                    request_deserializer=ring__pb2.BlobKeyRequest.FromString,
-                    response_serializer=ring__pb2.BlobResponse.SerializeToString,
+                    request_deserializer=common_dot_proto_dot_ring__pb2.BlobKeyRequest.FromString,
+                    response_serializer=common_dot_proto_dot_ring__pb2.BlobResponse.SerializeToString,
             ),
             'DeleteBlob': grpc.unary_unary_rpc_method_handler(
                     servicer.DeleteBlob,
-                    request_deserializer=ring__pb2.BlobKeyRequest.FromString,
-                    response_serializer=ring__pb2.StatusResponse.SerializeToString,
+                    request_deserializer=common_dot_proto_dot_ring__pb2.BlobKeyRequest.FromString,
+                    response_serializer=common_dot_proto_dot_ring__pb2.StatusResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -118,7 +118,7 @@ def add_RingServiceServicer_to_server(servicer, server):
 
 
  # This class is part of an EXPERIMENTAL API.
-class RingService:
+class RingService(object):
     """Protocolo interno entre peers: membresia (gossip) y almacenamiento
     de blobs (chunks de archivos y metadatos, ambos tratados igual).
     """
@@ -138,8 +138,8 @@ class RingService:
             request,
             target,
             '/dfsha.ring.RingService/HealthCheck',
-            ring__pb2.HealthRequest.SerializeToString,
-            ring__pb2.HealthResponse.FromString,
+            common_dot_proto_dot_ring__pb2.HealthRequest.SerializeToString,
+            common_dot_proto_dot_ring__pb2.HealthResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -165,8 +165,8 @@ class RingService:
             request,
             target,
             '/dfsha.ring.RingService/StoreBlob',
-            ring__pb2.BlobRequest.SerializeToString,
-            ring__pb2.StatusResponse.FromString,
+            common_dot_proto_dot_ring__pb2.BlobRequest.SerializeToString,
+            common_dot_proto_dot_ring__pb2.StatusResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -192,8 +192,8 @@ class RingService:
             request,
             target,
             '/dfsha.ring.RingService/GetBlob',
-            ring__pb2.BlobKeyRequest.SerializeToString,
-            ring__pb2.BlobResponse.FromString,
+            common_dot_proto_dot_ring__pb2.BlobKeyRequest.SerializeToString,
+            common_dot_proto_dot_ring__pb2.BlobResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -219,8 +219,8 @@ class RingService:
             request,
             target,
             '/dfsha.ring.RingService/DeleteBlob',
-            ring__pb2.BlobKeyRequest.SerializeToString,
-            ring__pb2.StatusResponse.FromString,
+            common_dot_proto_dot_ring__pb2.BlobKeyRequest.SerializeToString,
+            common_dot_proto_dot_ring__pb2.StatusResponse.FromString,
             options,
             channel_credentials,
             insecure,

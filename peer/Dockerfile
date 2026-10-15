@@ -1,3 +1,5 @@
+# Imagen del peer DFSha. Se construye desde la RAIZ del repo:
+#   docker build -f peer/Dockerfile -t dfsha-peer .
 FROM python:3.12-slim
 
 WORKDIR /app
@@ -5,10 +7,11 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY dfsha_pb2.py dfsha_pb2_grpc.py ring_pb2.py ring_pb2_grpc.py ./
+# codigo: paquete common (incluye los stubs gRPC en common/proto) y peer
 COPY common ./common
 COPY peer ./peer
 
+ENV PYTHONPATH=/app
 ENV DATA_DIR=/data
 RUN mkdir -p /data
 VOLUME ["/data"]

@@ -1,3 +1,5 @@
+# Imagen del cliente DFSha. Se construye desde la RAIZ del repo:
+#   docker build -f client/Dockerfile -t dfsha-client .
 FROM python:3.12-slim
 
 WORKDIR /app
@@ -5,7 +7,8 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY dfsha_pb2.py dfsha_pb2_grpc.py ./
+# el cliente necesita el paquete common (stubs gRPC + config) y client
+COPY common ./common
 COPY client ./client
 
 ENV PYTHONPATH=/app

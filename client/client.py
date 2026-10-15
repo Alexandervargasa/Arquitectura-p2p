@@ -17,23 +17,32 @@ Comandos:
   exit
 """
 
+import hashlib
 import os
 import posixpath
 import argparse
+import sys
 
 import grpc
 
-import dfsha_pb2
-import dfsha_pb2_grpc
+from common.proto import dfsha_pb2
+from common.proto import dfsha_pb2_grpc
+from common.config import chunk_size_bytes, ConfigError
 
-CHUNK_SIZE = 1024 * 1024
+# Permitir mensajes gRPC mayores al default de 4 MB (chunks de 8-16 MB).
+_MAX_MSG = 64 * 1024 * 1024
+_GRPC_OPTIONS = [
+    ("grpc.max_send_message_length", _MAX_MSG),
+    ("grpc.max_receive_message_length", _MAX_MSG),
+]
 
 
 class DFSClient:
-    def __init__(self, host: str, port: int):
-        self.channel = grpc.insecure_channel(f"{host}:{port}")
+    def __init__(self, host: str, port: int, chunk_size: int):
+        self.channel = grpc.insecure_channel(f"{host}:{port}", options=_GRPC_OPTIONS)
         self.stub = dfsha_pb2_grpc.DFSServiceStub(self.channel)
         self.cwd = "/"
+        self.chunk_size = chunk_size
 
     def resolve(self, path: str) -> str:
         if not path:
@@ -81,9 +90,11 @@ class DFSClient:
         remote_path = self.resolve(remote_path or posixpath.basename(local_path))
 
         def chunk_generator():
+            # STREAMING: leemos el archivo en trozos de chunk_size y los
+            # mandamos uno a uno, sin cargar el archivo completo en RAM.
             with open(local_path, "rb") as f:
                 while True:
-                    data = f.read(CHUNK_SIZE)
+                    data = f.read(self.chunk_size)
                     if not data:
                         break
                     yield dfsha_pb2.FileChunk(path=remote_path, data=data)
@@ -95,12 +106,16 @@ class DFSClient:
         remote_path = self.resolve(remote_path)
         local_path = local_path or posixpath.basename(remote_path)
         try:
+            # STREAMING: escribimos cada chunk a disco a medida que llega
+            # y vamos calculando el sha256 de forma incremental.
+            hasher = hashlib.sha256()
             with open(local_path, "wb") as f:
                 total = 0
                 for chunk in self.stub.Receive(dfsha_pb2.PathRequest(path=remote_path)):
                     f.write(chunk.data)
+                    hasher.update(chunk.data)
                     total += len(chunk.data)
-            print(f"recv: {total} bytes guardados en {local_path}")
+            print(f"recv: {total} bytes guardados en {local_path} (sha256={hasher.hexdigest()[:12]}...)")
         except grpc.RpcError as e:
             print(f"recv: {e.details()}")
 
@@ -144,4 +159,9 @@ if __name__ == "__main__":
     parser.add_argument("--host", default="localhost")
     parser.add_argument("--port", type=int, default=50051)
     args = parser.parse_args()
-    DFSClient(args.host, args.port).repl()
+    try:
+        chunk_size = chunk_size_bytes()
+    except ConfigError as e:
+        print(f"config invalida: {e}", file=sys.stderr)
+        sys.exit(2)
+    DFSClient(args.host, args.port, chunk_size).repl()

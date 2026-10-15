@@ -14,6 +14,7 @@ service RingService {
 message PeerInfo {
   string address = 1;     // host:puerto
   string peer_id_hex = 2; // id en el anillo (hash del address)
+  int32 weight = 3;       // peso de capacidad (nodos virtuales ponderados)
 }
 
 message HealthRequest {
